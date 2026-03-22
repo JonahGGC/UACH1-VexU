@@ -8,6 +8,7 @@
 
 # PROS
 bin/
+static/
 .cache/
 compile_commands.json
 temp.log

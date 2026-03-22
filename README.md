@@ -6,4 +6,4 @@ pros c add-depot LemLib https://raw.githubusercontent.com/LemLib/LemLib/depot/st
 pros c apply LemLib
 ```
 
-![alt text](https://github.com/JonahGGC/UACH1-VexU/blob/master/image.jpg?raw=true)
+![alt text](https://github.com/JonahGGC/UACH1-VexU/blob/main/readmeResources/code_notation.png?raw=true)

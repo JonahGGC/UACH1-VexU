@@ -53,5 +53,6 @@ PascalCase for `classes` :
 ## Authors
 
 [Edgar Klassen](https://github.com/nekomimint)
+[Jesus Gonzalez](https://github.com/CronosKnight)
 
 Pending to add.

@@ -1,0 +1,117 @@
+[33mcommit 7a191a5f90ae47b9e1935da43ef91f6e7352e983[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;31morigin/Big-BigTest[m[33m)[m
+Author: Jesus <jesus.alan.gonzalez.murillo@gmail.com>
+Date:   Mon Mar 30 15:08:55 2026 -0600
+
+    Added control config and routines files
+
+[33mcommit 8e1be4b194f95ff54a15daa4223a5c65aaba8069[m
+Author: CronosKnight <162507583+CronosKnight@users.noreply.github.com>
+Date:   Mon Mar 30 09:40:57 2026 -0600
+
+    Add Jesus Gonzalez to authors list
+
+[33mcommit 6fd44bd4fb2fd7967ef7ba19344435a2101895b1[m
+Author: NekoDev <nekomimint07@gmail.com>
+Date:   Wed Mar 25 10:12:32 2026 -0600
+
+    [UPDATE] more information in README.md
+
+[33mcommit 79dbb1a7c07d8f0ba46c965151cf1f85c06c727b[m
+Author: JGGC <jonahtanggc@gmail.com>
+Date:   Sun Mar 22 01:52:41 2026 -0600
+
+    [Hotfix] removed static/ and its content
+
+[33mcommit 5acd9ced5ece92b34fca692b7bbc17211e1a6919[m
+Author: JGGC <jonahtanggc@gmail.com>
+Date:   Sun Mar 22 01:46:54 2026 -0600
+
+    [Hotfix] fixed .git ignore
+
+[33mcommit 77268e38ed9943d423570916bdfe78ffbc9d2efd[m
+Author: JGGC <jonahtanggc@gmail.com>
+Date:   Sun Mar 22 01:06:11 2026 -0600
+
+    [Hotfix] rename a directory
+
+[33mcommit 446fddeef78b48a1c47caa182dac509e641c83f4[m
+Merge: e48f3f0 590753d
+Author: JonahGGC <jonahtanggc@gmail.com>
+Date:   Sun Mar 22 01:04:18 2026 -0600
+
+    Merge pull request #1 from JonahGGC/big-robot
+    
+    Creating the brench for the big robot code
+
+[33mcommit 590753d3f9de5918cf231124b248111a45e91369[m[33m ([m[1;31morigin/big-robot[m[33m)[m
+Author: NekoDev <nekomimint07@gmail.com>
+Date:   Sun Mar 22 00:59:47 2026 -0600
+
+    Creating the brench for the big robot code
+
+[33mcommit e48f3f054bbff7d80ced0408d2e25ce07bdc5ee7[m
+Author: JGGC <jonahtanggc@gmail.com>
+Date:   Sun Mar 22 00:37:13 2026 -0600
+
+    [UPDATE] Improved readme.mc x3
+
+[33mcommit 0a209892bdd1e1a63c00b66b3432bf3f09c9a040[m
+Author: JGGC <jonahtanggc@gmail.com>
+Date:   Sun Mar 22 00:36:32 2026 -0600
+
+    [UPDATE] Improved readme.mc x2
+
+[33mcommit e5f97434af694aa669a04a49b48cdb0798f42f26[m
+Author: JGGC <jonahtanggc@gmail.com>
+Date:   Sun Mar 22 00:35:29 2026 -0600
+
+    [UPDATE] Improved readme.mc
+
+[33mcommit 138a7fc9ab4537a5f67e4b7ac314702cfaabe573[m
+Merge: 73aba81 b6ce25a
+Author: JGGC <jonahtanggc@gmail.com>
+Date:   Sat Mar 21 15:36:24 2026 -0600
+
+    Merge branch 'main' of https://github.com/JonahGGC/UACH1-VexU
+
+[33mcommit 73aba814867af5a98729cd9941d9245b5c56a121[m
+Author: JGGC <jonahtanggc@gmail.com>
+Date:   Sat Mar 21 15:36:07 2026 -0600
+
+    [UPDATE] Added new files for a better organization.
+
+[33mcommit b6ce25aaedf8fcd5b8681471f59aceab9bb09d31[m
+Author: JonahGGC <jonahtanggc@gmail.com>
+Date:   Sat Mar 21 14:51:35 2026 -0600
+
+    Add installation instructions for LemLib
+
+[33mcommit 70db1d7f6b96dfae608cc4583a1135b6a651ce7d[m
+Author: JonahGGC <jonahtanggc@gmail.com>
+Date:   Sat Mar 21 14:50:23 2026 -0600
+
+    Update README with LemLib installation instructions
+
+[33mcommit b44d9ea80a0df9348f82d476a4ebbe6b377def78[m
+Author: JGGC <jonahtanggc@gmail.com>
+Date:   Sat Mar 21 12:36:22 2026 -0600
+
+    [UPDATE] Added correctly PROS project SmolTest
+
+[33mcommit 5e9b21f19c21f85b41edf07fcd839865346cb3c7[m
+Author: JGGC <jonahtanggc@gmail.com>
+Date:   Sat Mar 21 12:34:09 2026 -0600
+
+    [UPDATE] Removed PROS project SmolTest
+
+[33mcommit 5539f8eeab4e5ff50c798c61483c02331819ca98[m
+Author: JGGC <jonahtanggc@gmail.com>
+Date:   Sat Mar 21 12:31:22 2026 -0600
+
+    [UPDATE] New PROS project SmolTest
+
+[33mcommit 5a3e952291d2ad7c77ecbe77a397b883b4efc87d[m
+Author: JonahGGC <jonahtanggc@gmail.com>
+Date:   Sat Mar 21 12:15:42 2026 -0600
+
+    Initial commit

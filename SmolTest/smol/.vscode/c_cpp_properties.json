@@ -1,22 +1,23 @@
 {
   "configurations": [
     {
-      "name": "PROS Project",
+      "name": "windows-clang-x64",
       "includePath": [
-        "${workspaceFolder}/**"
+        "${workspaceFolder}/**",
+        "c:\\Users\\Jesus G\\OneDrive - Universidad Autónoma de Chihuahua\\Documentos\\Personal\\Proyectos\\Visual Studio\\VS Code\\C++\\UACH1-VexU\\SmolTest\\smol\\include"
       ],
       "defines": [
         "_DEBUG",
         "UNICODE",
         "_UNICODE"
       ],
-      "compilerPath": "${env:PROS_TOOLCHAIN}/bin/arm-none-eabi-g++",
+      "compilerPath": "c:\\Users\\Jesus G\\AppData\\Roaming\\Code\\User\\globalStorage\\sigbots.pros\\install\\pros-toolchain-windows\\usr\\bin\\arm-none-eabi-g++",
       "cStandard": "gnu11",
       "cppStandard": "gnu++20",
       "intelliSenseMode": "gcc-arm",
       "browse": {
         "path": [
-          "${workspaceFolder}"
+          "c:\\Users\\Jesus G\\OneDrive - Universidad Autónoma de Chihuahua\\Documentos\\Personal\\Proyectos\\Visual Studio\\VS Code\\C++\\UACH1-VexU\\SmolTest\\smol"
         ],
         "limitSymbolsToIncludedHeaders": true,
         "databaseFilename": ""

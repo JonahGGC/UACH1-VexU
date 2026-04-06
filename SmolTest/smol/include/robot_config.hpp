@@ -9,19 +9,23 @@ extern pros::Controller master;
 // ──────────────────────────────────────────
 //  Drive Motors
 // ──────────────────────────────────────────
-extern pros::MotorGroup left_mg;
-extern pros::MotorGroup right_mg;
+extern pros::MotorGroup rightTrain;
+extern pros::MotorGroup leftTrain;
+extern pros::MotorGroup sBand;
+extern pros::Motor indexUp;
+extern pros::Motor indexDown;
 
 // ──────────────────────────────────────────
 //  Sensors
 // ──────────────────────────────────────────
-extern pros::Imu imu;
-extern pros::Rotation vertical_rotation;
-// extern pros::Rotation rotation_sensor;
-// extern pros::Distance distance_sensor;
-// extern pros::Optical optical_sensor;
+extern pros::IMU inertialSensor;
+extern pros::Rotation verticalEncoder;
+extern pros::Distance distanceSensor;
 
 // ──────────────────────────────────────────
 //  Pheumatics
 // ──────────────────────────────────────────
-extern pros::ADIDigitalOut piston_rod;
+extern pros::ADIDigitalOut pistonPalette;
+extern pros::ADIDigitalOut pistonArm;
+extern bool statusPistonPalette; // Piston state
+extern bool statusPistonArm; // Piston state

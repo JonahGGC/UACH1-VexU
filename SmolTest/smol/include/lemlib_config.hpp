@@ -3,15 +3,15 @@
 #include "lemlib/api.hpp"
 #include "robot_config.hpp"  // needs motors & sensors
 
-extern lemlib::TrackingWheel vertical_wheel;
+extern lemlib::TrackingWheel trackingVertical;
 
 extern lemlib::Drivetrain    drivetrain;
 extern lemlib::OdomSensors   sensors;
 
-extern lemlib::ExpoDriveCurve throttle_curve;
-extern lemlib::ExpoDriveCurve steer_curve;
+extern lemlib::ExpoDriveCurve throttleCurve;
+extern lemlib::ExpoDriveCurve steerCurve;
 
-extern lemlib::ControllerSettings lateral_controller;
-extern lemlib::ControllerSettings angular_controller;
+extern lemlib::ControllerSettings lateralController;
+extern lemlib::ControllerSettings angularController;
 
 extern lemlib::Chassis chassis;

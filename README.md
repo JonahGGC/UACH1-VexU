@@ -56,4 +56,6 @@ PascalCase for `classes` :
 
 [Jesus Gonzalez](https://github.com/CronosKnight)
 
+[Perla Cobos](https://github.com/PerlaC51)
+
 Pending to add.

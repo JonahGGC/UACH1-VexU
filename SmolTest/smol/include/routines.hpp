@@ -3,6 +3,8 @@
 
 extern int blockCounter;
 extern bool isBlockDetected;
+extern int startTime;
+extern int elapsedTime;
 
 void displayInformation();
 void skillsAutonomous();

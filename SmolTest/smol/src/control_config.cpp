@@ -20,24 +20,40 @@ void taskControlInput()
     {
         //* Intake, charge of blocks
         if (master.get_digital(DIGITAL_R1)) //* move blocks to index (s band)
+        {
+            R1Pressed = true;
             sBand.move_velocity(200);
-        else if (master.get_digital(DIGITAL_R2)) //* move block to intake (s band, reverse, put block in down-side)
+            if(L1Pressed == false)
+            {
+                indexUp.move_velocity(200);
+            }
+        }else if (master.get_digital(DIGITAL_R2)) //* move block to intake (s band, reverse, put block in down-side)
+        {
             sBand.move_velocity(-200);
-        else
+            R1Pressed = false;
+        }else
+        {
+            R1Pressed = false;
             sBand.move_velocity(0);
-
+        }
 
         if (master.get_digital(DIGITAL_L1)) //* put block in up-side
         {
+            L1Pressed = true;
             indexUp.move_velocity(-200);
-            indexDown.move_velocity(200);
+            indexDown.move_velocity(600);
         }else if (master.get_digital(DIGITAL_L2)) //* put block in middle
         {
             indexUp.move_velocity(0);
-            indexDown.move_velocity(-200);
+            indexDown.move_velocity(-600);
+            L1Pressed = false;
         }else
-        {
-            indexUp.move_velocity(0);
+        {       
+            L1Pressed = false;     
+            if(R1Pressed == false)
+            {
+                indexUp.move_velocity(0);
+            }
             indexDown.move_velocity(0);
         }
 

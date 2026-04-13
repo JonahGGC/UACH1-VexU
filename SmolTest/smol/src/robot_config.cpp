@@ -43,7 +43,7 @@ pros::Controller master(pros::E_CONTROLLER_MASTER);
 pros::MotorGroup leftTrain({LEFT_UPPER_BACK, LEFT_UPPER_FRONT, LEFT_LOWER_BACK, LEFT_LOWER_FRONT});
 pros::MotorGroup rightTrain({RIGHT_UPPER_BACK, RIGHT_UPPER_FRONT, RIGHT_LOWER_BACK, RIGHT_LOWER_FRONT});
 //* Loader / intake / The S design
-pros::MotorGroup sBand({ENTRY_MOTOR_DOWN, ENTRY_MOTOR_UP, EXIT_MOTOR_UP});
+pros::MotorGroup sBand({ENTRY_MOTOR_UP, EXIT_MOTOR_UP, ENTRY_MOTOR_DOWN});
 //* Indexer
 pros::Motor indexUp(INDEX_MOTOR_UP);
 pros::Motor indexDown(INDEX_MOTOR_DOWN);
@@ -65,3 +65,5 @@ pros::ADIDigitalOut pistonPalette(PALETTE_PISTON);
 pros::ADIDigitalOut pistonArm(ARM_PISTON);
 bool statusPistonPalette = false; // Piston state
 bool statusPistonArm = false; // Piston state
+bool L1Pressed = false; // L1 button state
+bool R1Pressed = false; // R1 button state

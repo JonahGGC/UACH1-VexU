@@ -2,8 +2,6 @@
 #include "lemlib/api.hpp"
 
 
-
-
 // Define Drivetrain motors
 #define RIGHT_BACK  6
 #define RIGHT_MID   5
@@ -119,9 +117,9 @@ lemlib::ControllerSettings lateral_controller(
 
 
 lemlib::ControllerSettings angular_controller(
-    3.37,  // kP
+    7.7,  // kP
     0.1,   // kI
-    80,    // kD
+    21.5,    // kD
     3,     // windup
     0.5,   // smallError
     300,   // smallTimeout
@@ -142,7 +140,7 @@ lemlib::Chassis chassis(drivetrain, lateral_controller, angular_controller, sens
 
 void screen_task(){
     while (true) {
-        master.print(0,0,"%.2f",vertical_wheel.getDistanceTraveled());
+        master.print(0,0,"%.2f %.2f",vertical_wheel.getDistanceTraveled(), inertial_sensor.get_rotation());
 
         pros::delay(80);
     }
@@ -170,7 +168,7 @@ void initialize() {
 // -------------------------------------------------------------------------
 
 
-void autonomous() { //Match
+void autonomous_match() { //Match
 
     //Get to the center:
     chassis.setPose(0, 0, 0);
@@ -262,17 +260,19 @@ void autonomous() { //Match
 }
 
 
-void autonomous_encoder() {
+void autonomous() {
     chassis.setPose(0, 0, 0);
     pros::delay(1000);
-    chassis.moveToPoint(0, 24, 3000, {.forwards = true, .maxSpeed = 60});
+    chassis.moveToPoint(0, 24, 3000, {.forwards = false, .maxSpeed = 100},  false);
 }
 
 
-void autonomous_turn() {
+void autonomous_giro() {
     chassis.setPose(0, 0, 0);
     pros::delay(1000);
-    chassis.turnToHeading(90,3000);
+    chassis.turnToHeading(180, 2000, {}, false);
+    pros::delay(1000);
+    chassis.turnToHeading(0, 2000, {}, false);
 }
 
 

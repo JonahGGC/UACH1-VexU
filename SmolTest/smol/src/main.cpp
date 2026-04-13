@@ -1,89 +1,366 @@
 #include "main.h"
-#include "robot_config.hpp" 
-/**
- * A callback function for LLEMU's center button.
- *
- * When this callback is fired, it will toggle line 2 of the LCD text between
- * "I was pressed!" and nothing.
- */
-void on_center_button() {
-	static bool pressed = false;
-	pressed = !pressed;
-	if (pressed) {
-		pros::lcd::set_text(2, "I was pressed!");
-	} else {
-		pros::lcd::clear_line(2);
-	}
+#include "lemlib/api.hpp"
+
+
+
+
+// Define Drivetrain motors
+#define RIGHT_BACK  6
+#define RIGHT_MID   5
+#define RIGHT_FRONT 4
+
+
+#define LEFT_BACK  3
+#define LEFT_MID   2
+#define LEFT_FRONT 1
+
+
+// Define subsystems motors
+#define INTAKER   7
+
+
+#define TRANSPORT_BOTTOM   -8
+#define TRANSPORT_MID     18
+#define TRANSPORT_TOP   -19
+
+
+#define OUTTAKER  -20
+
+
+// Motor Groups
+pros::MotorGroup right_motors ({RIGHT_BACK, RIGHT_MID, RIGHT_FRONT}, pros::MotorGearset::blue);
+pros::MotorGroup left_motors ({-LEFT_BACK, -LEFT_MID, -LEFT_FRONT}, pros::MotorGearset::blue);
+
+
+// Subsystems
+pros::MotorGroup intaker ({INTAKER}, pros::MotorGearset::green);
+pros::MotorGroup transport ({TRANSPORT_BOTTOM, TRANSPORT_MID}, pros::MotorGearset::green);
+pros::MotorGroup transportTop ({TRANSPORT_TOP}, pros::MotorGearset::blue );
+pros::MotorGroup outtaker ({OUTTAKER}, pros::MotorGearset::green);
+
+
+// Inertial sensor
+pros::Imu inertial_sensor(10);
+
+
+// Rotation sensor
+pros::Rotation vertical_rotation(-9);
+
+
+// Distance sensor
+pros::Distance distance_sensor(17);
+
+
+// Pneumatics
+pros::ADIDigitalOut piston_ele('A'); 
+bool status_ele=false;
+pros::ADIDigitalOut piston_palette('B');
+bool status_palette=false;
+pros::ADIDigitalOut piston_hook('H'); 
+bool status_hook=false;   
+
+
+// Master Control
+pros::Controller master (pros::E_CONTROLLER_MASTER);
+
+
+// Encoder wheel
+lemlib::TrackingWheel vertical_wheel(&vertical_rotation, 1.9695, 0); //antes -0.5
+
+
+// Drivetrain measures
+lemlib::Drivetrain drivetrain(
+    &left_motors,  // left motors
+    &right_motors, // right motors
+    12.5,          // TRACK WIDTH
+    3,          // wheel diameter
+    360,        // RPM
+    2              // Horizontal drift
+);
+
+
+// Odometry sensors
+lemlib::OdomSensors sensors(
+    &vertical_wheel, // Reference to vertical rotary sensor
+    nullptr,         // Vertical tracking wheel 2
+    nullptr,         // Horizontal tracking wheel 1
+    nullptr,         // Horizontal tracking wheel 2
+    &inertial_sensor // Inercial
+);
+
+
+// Control curves
+lemlib::ExpoDriveCurve throttle_curve(
+    5,  // "Drift" of the joysticks [127]
+    7,  //  minimum output where drivetrain will move out of 127
+    1.019 //  expo curve gain
+);
+
+
+lemlib::ExpoDriveCurve steer_curve(
+    7,  //* joystick deadband out of 127
+    10,   //* minimum output where drivetrain will move out of 127
+    1.019 //* expo curve gain
+);
+
+
+// PIDs
+lemlib::ControllerSettings lateral_controller(
+    8,    // kP
+    0.1,  // kI
+    22,   // kD
+    3,    // windup
+    0.5,  // smallError
+    200,  // smallTimeout
+    3,    // largeError
+    500,  // largeTimeout
+    0     // slew
+);
+
+
+lemlib::ControllerSettings angular_controller(
+    3.37,  // kP
+    0.1,   // kI
+    80,    // kD
+    3,     // windup
+    0.5,   // smallError
+    300,   // smallTimeout
+    3,     // largeError
+    500,   // largeTimeout
+    2      // slew
+);
+
+
+// Create chassis object
+lemlib::Chassis chassis(drivetrain, lateral_controller, angular_controller, sensors, &throttle_curve, &steer_curve);
+
+
+// -------------------------------------------------------------------------
+// INIT FUCTIONS
+// -------------------------------------------------------------------------
+
+
+void screen_task(){
+    while (true) {
+        master.print(0,0,"%.2f",vertical_wheel.getDistanceTraveled());
+
+        pros::delay(80);
+    }
 }
 
-/**
- * Runs initialization code. This occurs as soon as the program is started.
- *
- * All other competition modes are blocked by initialize; it is recommended
- * to keep execution time for this mode under a few seconds.
- */
+
 void initialize() {
-	pros::lcd::initialize();
-	pros::lcd::set_text(1, "Hello PROS User!");
+    pros::lcd::initialize();
+   
+    pros::lcd::set_text(1, "Calibrating... DON'T TOUCH");
+    chassis.calibrate(); // IMU Calibration
+    pros::delay(500); // Time to let IMU calibrate
+    pros::lcd::set_text(1, "System Ok. IMU OK.");
+    piston_ele.set_value(false);
+    piston_palette.set_value(false);
+    piston_hook.set_value(false);
+    pros::lcd::set_text(1, "System Ok. IMU OK.");
 
-	pros::lcd::register_btn1_cb(on_center_button);
+    pros::Task Movement_thread(screen_task);
 }
 
-/**
- * Runs while the robot is in the disabled state of Field Management System or
- * the VEX Competition Switch, following either autonomous or opcontrol. When
- * the robot is enabled, this task will exit.
- */
-void disabled() {}
 
-/**
- * Runs after initialize(), and before autonomous when connected to the Field
- * Management System or the VEX Competition Switch. This is intended for
- * competition-specific initialization routines, such as an autonomous selector
- * on the LCD.
- *
- * This task will exit when the robot is enabled and autonomous or opcontrol
- * starts.
- */
-void competition_initialize() {}
+// -------------------------------------------------------------------------
+// AUTONOMOUS
+// -------------------------------------------------------------------------
 
-/**
- * Runs the user autonomous code. This function will be started in its own task
- * with the default priority and stack size whenever the robot is enabled via
- * the Field Management System or the VEX Competition Switch in the autonomous
- * mode. Alternatively, this function may be called in initialize or opcontrol
- * for non-competition testing purposes.
- *
- * If the robot is disabled or communications is lost, the autonomous task
- * will be stopped. Re-enabling the robot will restart the task, not re-start it
- * from where it left off.
- */
-void autonomous() {}
 
-/**
- * Runs the operator control code. This function will be started in its own task
- * with the default priority and stack size whenever the robot is enabled via
- * the Field Management System or the VEX Competition Switch in the operator
- * control mode.
- *
- * If no competition control is connected, this function will run immediately
- * following initialize().
- *
- * If the robot is disabled or communications is lost, the
- * operator control task will be stopped. Re-enabling the robot will restart the
- * task, not resume it from where it left off.
- */
+void autonomous() { //Match
+
+    //Get to the center:
+    chassis.setPose(0, 0, 0);
+    pros::delay(100);
+    chassis.moveToPoint(0, 32, 3000, {.forwards = true, .maxSpeed = 70}, false);
+    chassis.turnToHeading(-90,5000, {.maxSpeed=127}, false);
+
+    //Block in the center:
+    chassis.setPose(0,0,0);
+    pros::delay(250);
+    chassis.moveToPoint(0,6,3000, {.forwards=true, .maxSpeed=80},false);
+    transport.move(-127);
+    intaker.move(-127);
+    pros::delay(2000);
+    transport.move(0);
+    intaker.move(0);
+
+    //Get to the loader:
+    chassis.moveToPoint(0,-50,3000, {.forwards=false, .maxSpeed=70},false);
+    chassis.turnToHeading(-65,3000, {}, false);
+    pros::delay(250);
+    chassis.turnToHeading(-135,3000, {}, false);
+    pros::delay(250);
+
+    //Empty the loader:
+    chassis.setPose(0,0,0);
+    pros::delay(250);
+    piston_ele.set_value(true);
+    pros::delay(250);
+    piston_palette.set_value(true);
+    pros::delay(250);
+    chassis.moveToPoint(0,15,3000, {.forwards=true, .maxSpeed=70},true);
+    transportTop.move(127);
+    transport.move(127);
+    intaker.move(127);
+    pros::delay(6000);
+    transportTop.move(0);
+    transport.move(0);
+    intaker.move(0);
+    pros::delay(250);
+    piston_palette.set_value(false);
+    pros::delay(250);
+    chassis.moveToPoint(0,0,3000, {.forwards=false, .maxSpeed=70},true);
+    pros::delay(250);
+    chassis.turnToHeading(-45,3000, {}, false);
+    pros::delay(150);
+    transportTop.move(-127);
+    transport.move(-127);
+    intaker.move(-127);
+    pros::delay(1500);
+    transportTop.move(0);
+    transport.move(0);
+    intaker.move(0);
+    chassis.turnToHeading(0,3000, {}, false);
+    pros::delay(250);
+    piston_palette.set_value(true);
+    pros::delay(250);
+    chassis.moveToPoint(0,14,3000, {.forwards=true, .maxSpeed=70},true);
+    transportTop.move(127);
+    transport.move(127);
+    intaker.move(127);
+    pros::delay(6000);
+    transportTop.move(0);
+    transport.move(0);
+    intaker.move(0);
+
+    //Fill the goal:
+    chassis.moveToPoint(0,0,3000, {.forwards=false, .maxSpeed=70},true);
+    pros::delay(250);
+    piston_palette.set_value(false);
+    pros::delay(250);
+    chassis.turnToHeading(-90,3000,{},false);
+    pros::delay(250);
+    chassis.moveToPoint(1.5,0,3000, {.forwards=true, .maxSpeed=70},true);
+    pros::delay(250);
+    chassis.turnToHeading(180,3000,{},false);
+    pros::delay(250);
+    chassis.moveToPoint(0,-24,3000, {.forwards=true, .maxSpeed=60},false);
+    pros::delay(350);
+    transportTop.move(127);
+    transport.move(127);
+    outtaker.move(127);
+    pros::delay(5000);
+    transportTop.move(0);
+    transport.move(0);
+    outtaker.move(0);
+    status_ele=true;
+
+}
+
+
+void autonomous_encoder() {
+    chassis.setPose(0, 0, 0);
+    pros::delay(1000);
+    chassis.moveToPoint(0, 24, 3000, {.forwards = true, .maxSpeed = 60});
+}
+
+
+void autonomous_turn() {
+    chassis.setPose(0, 0, 0);
+    pros::delay(1000);
+    chassis.turnToHeading(90,3000);
+}
+
+
+
+// -------------------------------------------------------------------------
+// CONTROLLER
+// -------------------------------------------------------------------------
+
+
+void Task_Mov(){
+    while (true) {
+        // get joystick positions
+        int leftY = master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
+        int rightX = master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
+        // move the chassis with curvature drive
+        chassis.arcade(leftY, rightX);
+        // delay to save resources
+        pros::delay(10);
+    }
+}
+
+
+void Task_Ent_Uriel(){
+
+    while (true) {
+        if(master.get_digital(DIGITAL_R1)) {    
+            intaker.move(-127);
+            transport.move(-127);
+            transportTop.move(-127);
+        } else if(master.get_digital(DIGITAL_R2)) {
+            intaker.move(127);
+            transport.move(127);
+            transportTop.move(127);
+        } else {                                
+            if ( !(master.get_digital(DIGITAL_L1) || master.get_digital(DIGITAL_L2)) )
+            {
+                transport.move(0);
+                transportTop.move(0);
+            }
+            intaker.move(0);
+           
+        }
+
+
+        if(master.get_digital(DIGITAL_L2)) {    
+            transport.move(127);
+            transportTop.move(127);
+            outtaker.move(127);
+        } else if(master.get_digital(DIGITAL_L1)) {
+            transport.move(-127);
+            transportTop.move(-127);
+            outtaker.move(-127);
+        } else {                
+            if ( !(master.get_digital(DIGITAL_R1) || master.get_digital(DIGITAL_R2)) )
+            {
+                transport.move(0);
+                transportTop.move(0);
+            }                
+            outtaker.move(0);
+        }  
+
+        if(master.get_digital_new_press(DIGITAL_X)) {  
+            piston_ele.set_value(true);
+            status_ele=false;
+            pros::delay(20); 
+            status_palette=!status_palette; 
+            piston_palette.set_value(status_palette);
+        }
+
+        if(master.get_digital_new_press(DIGITAL_Y)){
+            status_hook=!status_hook;
+            piston_hook.set_value(status_hook);
+        }
+       
+        if(master.get_digital_new_press(DIGITAL_RIGHT)) {
+            status_ele=!status_ele;
+            piston_ele.set_value(status_ele);
+        }
+
+        pros::delay(20);                        
+    }
+}
+
+
 void opcontrol() {
-	while (true) {
-		pros::lcd::print(0, "%d %d %d", (pros::lcd::read_buttons() & LCD_BTN_LEFT) >> 2,
-		                 (pros::lcd::read_buttons() & LCD_BTN_CENTER) >> 1,
-		                 (pros::lcd::read_buttons() & LCD_BTN_RIGHT) >> 0);  // Prints status of the emulated screen LCDs
-
-		// Arcade control scheme
-		int dir = master.get_analog(ANALOG_LEFT_Y);    // Gets amount forward/backward from left joystick
-		int turn = -master.get_analog(ANALOG_RIGHT_X);  // Gets the turn left/right from right joystick
-		left_mg.move(dir - turn);                      // Sets left motor voltage
-		right_mg.move(dir + turn);                     // Sets right motor voltage
-		pros::delay(20);                               // Run for 20 ms then update
-	}
+    pros::Task Movement_thread(Task_Mov);      
+    pros::Task Entry_thread(Task_Ent_Uriel);      
+    while(true){
+        pros::delay(20);
+    }
 }

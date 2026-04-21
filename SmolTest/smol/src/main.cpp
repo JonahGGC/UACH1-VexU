@@ -14,15 +14,15 @@
 
 
 // Define subsystems motors
-#define INTAKER   7
+#define INTAKER   -7
 
 
-#define TRANSPORT_BOTTOM   -8
-#define TRANSPORT_MID     18
-#define TRANSPORT_TOP   -19
+#define TRANSPORT_BOTTOM   8
+#define TRANSPORT_MID     -18
+#define TRANSPORT_TOP   19
 
 
-#define OUTTAKER  -20
+#define OUTTAKER  20
 
 
 // Motor Groups
@@ -31,10 +31,10 @@ pros::MotorGroup left_motors ({-LEFT_BACK, -LEFT_MID, -LEFT_FRONT}, pros::MotorG
 
 
 // Subsystems
-pros::MotorGroup intaker ({INTAKER}, pros::MotorGearset::green);
+pros::Motor intaker ({INTAKER}, pros::MotorGearset::green);
 pros::MotorGroup transport ({TRANSPORT_BOTTOM, TRANSPORT_MID}, pros::MotorGearset::green);
-pros::MotorGroup transportTop ({TRANSPORT_TOP}, pros::MotorGearset::blue );
-pros::MotorGroup outtaker ({OUTTAKER}, pros::MotorGearset::green);
+pros::Motor transportTop ({TRANSPORT_TOP}, pros::MotorGearset::blue );
+pros::Motor outtaker ({OUTTAKER}, pros::MotorGearset::green);
 
 
 // Inertial sensor
@@ -47,6 +47,10 @@ pros::Rotation vertical_rotation(-9);
 
 // Distance sensor
 pros::Distance distance_sensor(17);
+int wall_detection =5;
+bool lastblock_detection=false;
+bool block_detection=false;
+int block_counter=0;
 
 
 // Pneumatics
@@ -63,7 +67,7 @@ pros::Controller master (pros::E_CONTROLLER_MASTER);
 
 
 // Encoder wheel
-lemlib::TrackingWheel vertical_wheel(&vertical_rotation, 1.9695, 0); //antes -0.5
+lemlib::TrackingWheel vertical_wheel(&vertical_rotation, 2.0056, 0); //antes -0.5
 
 
 // Drivetrain measures
@@ -104,9 +108,9 @@ lemlib::ExpoDriveCurve steer_curve(
 
 // PIDs
 lemlib::ControllerSettings lateral_controller(
-    8,    // kP
+    8.75,    // kP
     0.1,  // kI
-    22,   // kD
+    23,   // kD
     3,    // windup
     0.5,  // smallError
     200,  // smallTimeout
@@ -138,10 +142,78 @@ lemlib::Chassis chassis(drivetrain, lateral_controller, angular_controller, sens
 // -------------------------------------------------------------------------
 
 
+void robotReposition(int){
+    int lastblock_counter=block_counter;
+    int count=pros::millis();
+
+}
+
+
+void blockCounter(){
+    while (true) { 
+        if(distance_sensor.get() > wall_detection && block_detection==false){
+            block_detection=true;
+            if(intaker.get_voltage()>0){
+                block_counter++;
+            }
+            else if(intaker.get_voltage()<0){
+                block_counter--;
+            }
+        }
+        else if (distance_sensor.get() <= wall_detection){
+            block_detection=false;
+        }
+        pros::delay(10);
+    }
+}
+
+
+// void dischargeBlocks(int block_counter,int time){
+//     int firstTime=pros::millis();
+//     while (true) { 
+//         intaker.move(-127);
+//         transport.move(-100);
+//         transportTop.move(-127);
+//         if(distance_sensor.get() < wall_detection && block_detection==false){
+//             block_detection=true;
+//             block_counter++;
+//         }
+//         else if (distance_sensor.get() >= wall_detection){
+//             block_detection=false;
+//         }
+//         if(pros::millis()-firstTime>=time){
+//             intaker.move(0);
+//             transport.move(0);
+//             transportTop.move(0); 
+//             break;
+//         }
+//         pros::delay(10);
+//     }
+// }
+
+
+// void emptyLoad(int block_counter,int time){
+//     int firstTime=pros::millis();
+//     while (true) { 
+//         intaker.move(-127);
+//         transport.move(-127);
+//         transportTop.move(-127);       
+//         if(pros::millis()-firstTime>=time){
+//             intaker.move(0);
+//             transport.move(0);
+//             transportTop.move(0); 
+//             break;
+//         }
+//         pros::delay(10);
+//     }
+// }
+
+
 void screen_task(){
     while (true) {
-        master.print(0,0,"%.2f %.2f",vertical_wheel.getDistanceTraveled(), inertial_sensor.get_rotation());
-
+        master.print(0,0,"%.2f",chassis.getPose().y);
+        // master.print(0,0,"%.2f %.2f %.2f",chassis.getPose().y, inertial_sensor.get_rotation(), right_motors.get_temperature());
+        // master.print(0,0,"%d, %d", block_counter, distance_sensor.get());
         pros::delay(80);
     }
 }
@@ -158,8 +230,9 @@ void initialize() {
     piston_palette.set_value(false);
     piston_hook.set_value(false);
     pros::lcd::set_text(1, "System Ok. IMU OK.");
-
+    
     pros::Task Movement_thread(screen_task);
+    pros::Task blockCounter_thread(blockCounter);
 }
 
 
@@ -168,90 +241,87 @@ void initialize() {
 // -------------------------------------------------------------------------
 
 
-void autonomous_match() { //Match
+void autonomous() { //Match
 
-    //Get to the center:
+    //Go to the center:
     chassis.setPose(0, 0, 0);
-    pros::delay(100);
-    chassis.moveToPoint(0, 32, 3000, {.forwards = true, .maxSpeed = 70}, false);
-    chassis.turnToHeading(-90,5000, {.maxSpeed=127}, false);
+    chassis.moveToPoint(0, 31.5, 3000, {.forwards = true, .maxSpeed = 127}, false);
+    chassis.turnToHeading(-47,5000, {.maxSpeed=127}, false);
 
     //Block in the center:
     chassis.setPose(0,0,0);
-    pros::delay(250);
-    chassis.moveToPoint(0,6,3000, {.forwards=true, .maxSpeed=80},false);
     transport.move(-127);
-    intaker.move(-127);
-    pros::delay(2000);
+    intaker.move(-80);
+    chassis.moveToPoint(0,6.5,1500, {.forwards=true, .maxSpeed=20},true);
+    pros::delay(1000);
     transport.move(0);
     intaker.move(0);
 
     //Get to the loader:
-    chassis.moveToPoint(0,-50,3000, {.forwards=false, .maxSpeed=70},false);
-    chassis.turnToHeading(-65,3000, {}, false);
-    pros::delay(250);
-    chassis.turnToHeading(-135,3000, {}, false);
-    pros::delay(250);
+    chassis.moveToPoint(0,-42,4000, {.forwards=false, .maxSpeed=127},false);
+    chassis.turnToHeading(-134.5,3000, {.maxSpeed=127}, false);
 
     //Empty the loader:
     chassis.setPose(0,0,0);
-    pros::delay(250);
     piston_ele.set_value(true);
     pros::delay(250);
     piston_palette.set_value(true);
-    pros::delay(250);
-    chassis.moveToPoint(0,15,3000, {.forwards=true, .maxSpeed=70},true);
+    pros::delay(500);
+    chassis.moveToPoint(0,14,3000, {.forwards=true, .maxSpeed=127},true);
     transportTop.move(127);
     transport.move(127);
     intaker.move(127);
-    pros::delay(6000);
+    pros::delay(500);
+    chassis.setPose(0,0,0);
+    chassis.moveToPoint(0,3,3000, {.forwards=false, .maxSpeed=50},false);
+    pros::delay(2000);
+
+    //Discharge the blocks
+    chassis.moveToPoint(0,-10,3000, {.forwards=false, .maxSpeed=127},false);
     transportTop.move(0);
     transport.move(0);
     intaker.move(0);
-    pros::delay(250);
     piston_palette.set_value(false);
-    pros::delay(250);
-    chassis.moveToPoint(0,0,3000, {.forwards=false, .maxSpeed=70},true);
-    pros::delay(250);
-    chassis.turnToHeading(-45,3000, {}, false);
-    pros::delay(150);
+    pros::delay(100);
+    chassis.turnToHeading(-45,3000, {.maxSpeed=127}, false);
+    chassis.setPose(0,0,0);
+    chassis.moveToPoint(0,3,3000, {.forwards=true, .maxSpeed=127},true);
+    // dischargeBlocks(3, 1200);
     transportTop.move(-127);
     transport.move(-127);
     intaker.move(-127);
-    pros::delay(1500);
-    transportTop.move(0);
-    transport.move(0);
-    intaker.move(0);
-    chassis.turnToHeading(0,3000, {}, false);
-    pros::delay(250);
-    piston_palette.set_value(true);
-    pros::delay(250);
-    chassis.moveToPoint(0,14,3000, {.forwards=true, .maxSpeed=70},true);
-    transportTop.move(127);
-    transport.move(127);
-    intaker.move(127);
-    pros::delay(6000);
+    pros::delay(1300);
     transportTop.move(0);
     transport.move(0);
     intaker.move(0);
 
-    //Fill the goal:
-    chassis.moveToPoint(0,0,3000, {.forwards=false, .maxSpeed=70},true);
+    //Empty the second load
+    chassis.turnToHeading(0.5,3000, {.maxSpeed=127}, false);
+    piston_palette.set_value(true);
     pros::delay(250);
+    chassis.moveToPoint(0,3,3000, {.forwards=true, .maxSpeed=127},true);
+    transportTop.move(127);
+    transport.move(127);
+    intaker.move(127);
+    pros::delay(2500);
+
+    //Fill the goal:
+    chassis.moveToPoint(0,-10,3000, {.forwards=false, .maxSpeed=127},false);
+    transportTop.move(0);
+    transport.move(0);
+    intaker.move(0);
     piston_palette.set_value(false);
     pros::delay(250);
-    chassis.turnToHeading(-90,3000,{},false);
-    pros::delay(250);
-    chassis.moveToPoint(1.5,0,3000, {.forwards=true, .maxSpeed=70},true);
-    pros::delay(250);
-    chassis.turnToHeading(180,3000,{},false);
-    pros::delay(250);
-    chassis.moveToPoint(0,-24,3000, {.forwards=true, .maxSpeed=60},false);
-    pros::delay(350);
+    chassis.turnToHeading(-179,3000,{.maxSpeed=127},false);
+    chassis.setPose(0,0,0);
+    chassis.moveToPoint(2,17,3000, {.forwards=true, .maxSpeed=127},false);
+    chassis.moveToPoint(0,20,5000, {.forwards=true, .maxSpeed=50},true);
     transportTop.move(127);
     transport.move(127);
     outtaker.move(127);
-    pros::delay(5000);
+    intaker.move(127);
+    pros::delay(10000);
+    intaker.move(0);
     transportTop.move(0);
     transport.move(0);
     outtaker.move(0);
@@ -260,19 +330,59 @@ void autonomous_match() { //Match
 }
 
 
-void autonomous() {
+void autonomous_skills() {
+
+    //Get to the first loader
     chassis.setPose(0, 0, 0);
-    pros::delay(1000);
-    chassis.moveToPoint(0, 24, 3000, {.forwards = false, .maxSpeed = 100},  false);
+
+    //Empty the first loader
+
+    //Get to the goal
+
+    //Fill the goal
+    
+    //Get to the second loader
+
+    //Empty the second loader
+
+    //Get to the goal
+
+    //Fill the goal
+
+    //Come back
+
+    //To park
+
+
+
 }
 
 
-void autonomous_giro() {
+void autonomous_l() {
+    chassis.setPose(0, 0, 0);
+    pros::delay(1000);
+    chassis.moveToPoint(0, 60, 3000, {.forwards = true, .maxSpeed = 127},  false);
+}
+
+
+void autonomous_gyro() {
     chassis.setPose(0, 0, 0);
     pros::delay(1000);
     chassis.turnToHeading(180, 2000, {}, false);
     pros::delay(1000);
     chassis.turnToHeading(0, 2000, {}, false);
+}
+
+
+void autonomous_x() {
+    intaker.move(127);
+    transport.move(127);
+    transportTop.move(127);
+    pros::delay(2000);
+    intaker.move(-127);
+    transport.move(-127);
+    transportTop.move(-127);
+    pros::delay(2000);
 }
 
 
@@ -299,13 +409,13 @@ void Task_Ent_Uriel(){
 
     while (true) {
         if(master.get_digital(DIGITAL_R1)) {    
-            intaker.move(-127);
-            transport.move(-127);
-            transportTop.move(-127);
-        } else if(master.get_digital(DIGITAL_R2)) {
             intaker.move(127);
             transport.move(127);
             transportTop.move(127);
+        } else if(master.get_digital(DIGITAL_R2)) {
+            intaker.move(-80);
+            transport.move(-127);
+            transportTop.move(-127);
         } else {                                
             if ( !(master.get_digital(DIGITAL_L1) || master.get_digital(DIGITAL_L2)) )
             {
@@ -318,13 +428,13 @@ void Task_Ent_Uriel(){
 
 
         if(master.get_digital(DIGITAL_L2)) {    
-            transport.move(127);
-            transportTop.move(127);
-            outtaker.move(127);
-        } else if(master.get_digital(DIGITAL_L1)) {
             transport.move(-127);
             transportTop.move(-127);
             outtaker.move(-127);
+        } else if(master.get_digital(DIGITAL_L1)) {
+            transport.move(127);
+            transportTop.move(127);
+            outtaker.move(127);
         } else {                
             if ( !(master.get_digital(DIGITAL_R1) || master.get_digital(DIGITAL_R2)) )
             {
@@ -334,10 +444,12 @@ void Task_Ent_Uriel(){
             outtaker.move(0);
         }  
 
-        if(master.get_digital_new_press(DIGITAL_X)) {  
-            piston_ele.set_value(true);
-            status_ele=false;
-            pros::delay(20); 
+        if(master.get_digital_new_press(DIGITAL_X)) {
+            if(status_ele==false){
+                piston_ele.set_value(true);
+                status_ele=true;
+                pros::delay(60);
+            }  
             status_palette=!status_palette; 
             piston_palette.set_value(status_palette);
         }

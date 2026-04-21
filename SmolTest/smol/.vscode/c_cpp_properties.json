@@ -3,20 +3,21 @@
     {
       "name": "PROS Project",
       "includePath": [
-        "${workspaceFolder}/**"
+        "${workspaceFolder}/**",
+        "c:\\Perla\\Progra\\Vex U\\UACH1-VexU\\SmolTest\\smol\\include"
       ],
       "defines": [
         "_DEBUG",
         "UNICODE",
         "_UNICODE"
       ],
-      "compilerPath": "${env:PROS_TOOLCHAIN}/bin/arm-none-eabi-g++",
+      "compilerPath": "c:\\Users\\pcobo\\AppData\\Roaming\\Code\\User\\globalStorage\\sigbots.pros\\install\\pros-toolchain-windows\\usr\\bin\\arm-none-eabi-g++",
       "cStandard": "gnu11",
       "cppStandard": "gnu++20",
       "intelliSenseMode": "gcc-arm",
       "browse": {
         "path": [
-          "${workspaceFolder}"
+          "c:\\Perla\\Progra\\Vex U\\UACH1-VexU\\SmolTest\\smol"
         ],
         "limitSymbolsToIncludedHeaders": true,
         "databaseFilename": ""
